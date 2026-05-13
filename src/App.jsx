@@ -191,7 +191,9 @@ function Particles({ color = "rgba(156,255,59,0.12)", count = 50 }) {
 function Gate({ onComplete }) {
   const captchaRef = useRef(null);
   const countdown = useCountdown(LAUNCH_DATE);
-  const [form, setForm] = useState({ name: "", email: "" });
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPass, setShowPass] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [err, setErr] = useState({});
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -202,8 +204,10 @@ function Gate({ onComplete }) {
  
   const submit = async () => {
     const e = {};
-    if (!form.name.trim() || form.name.trim().length < 2) e.name = true;
+    if (!isLogin && (!form.name.trim() || form.name.trim().length < 2)) e.name = true;
     if (!form.email.trim() || !form.email.includes("@")) e.email = true;
+    if (!form.password || form.password.length < 6) e.password = true;
+    if (!isLogin && form.password !== form.confirmPassword) e.confirm = true;
     if (Object.keys(e).length) { setErr(e); return; }
     
     setLoading(true);
@@ -211,7 +215,6 @@ function Gate({ onComplete }) {
       if (captchaRef.current) {
         captchaRef.current.execute();
       } else {
-        // Fallback simulate instant success if offline/blocked
         setTimeout(() => onCaptchaVerify("bypass-token-dev"), 600);
       }
     } catch (err) {
@@ -221,28 +224,35 @@ function Gate({ onComplete }) {
 
   const onCaptchaVerify = async (token) => {
     try {
-      // Attempt supabase auth
-      const { data, error } = await supabase.auth.signUp({
-        email: form.email,
-        password: "AEON-ACTIV8-USER",
-        options: {
-          captchaToken: token !== "bypass-token-dev" ? token : undefined,
-          data: { callsign: form.name, ref_code: genRef(form.name) }
-        }
-      });
+      let result;
+      if (isLogin) {
+        result = await supabase.auth.signInWithPassword({
+          email: form.email,
+          password: form.password,
+        });
+      } else {
+        result = await supabase.auth.signUp({
+          email: form.email,
+          password: form.password,
+          options: {
+            captchaToken: token !== "bypass-token-dev" ? token : undefined,
+            data: { callsign: form.name, ref_code: genRef(form.name) }
+          }
+        });
+      }
 
-      // If blocked by network or external configuration, silently permit local profile creation
       setLoading(false);
       setStep(1);
       const user = { 
-        ...form, 
-        ref: genRef(form.name), 
+        name: form.name || form.email.split("@")[0],
+        email: form.email,
+        ref: genRef(form.name || "USER"), 
         joined: Date.now(), 
-        rep: 50, // Seed basic REP
+        rep: isLogin ? 100 : 50, 
         tasks: {}, 
         pledge: null, 
         badge: "GENESIS",
-        id: data?.user?.id || `usr-${Date.now()}`
+        id: result?.data?.user?.id || `usr-${Date.now()}`
       };
       await store.set("activ8-user", user);
       setTimeout(() => onComplete(user), 2400);
@@ -259,25 +269,70 @@ function Gate({ onComplete }) {
         <div className="lr"><div className="ld" /></div>
         <div className="gl">ADAPTIVE LIQUIDITY LABS</div>
         <h1 className="gt">AEON ACTIV8</h1>
-        <p className="gs">Intake interface and Sophia queue terminal. The coordination layer is active.</p>
-        <div className="cd">
-          <div className="cdl">GENESIS WINDOW CLOSES IN</div>
-          <div className="cdg">
-            {[["d",countdown.d],["h",countdown.h],["m",countdown.m],["s",countdown.s]].map(([l,v])=>(
-              <div key={l} className="cdc"><span className="cdv">{String(v).padStart(2,"0")}</span><span className="cdu">{l}</span></div>
-            ))}
-          </div>
-        </div>
+        
         {step === 0 && (
           <div className="fb">
-            <div className="sp"><span className="spd" /> GENESIS SPOTS ARE LIMITED</div>
-            <div className="fi"><label>CALLSIGN</label><input placeholder="Choose your ACTIV8 identity" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className={err.name?"ie":""} /></div>
-            <div className="fi"><label>SIGNAL CHANNEL</label><input type="email" placeholder="Email for priority access" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} className={err.email?"ie":""} /></div>
+            <h2 style={{color:"var(--bn)",fontFamily:"'Space Grotesk'",fontSize:24,fontWeight:600,marginBottom:8}}>{isLogin ? "Welcome back" : "Create account"}</h2>
+            <p className="gs">{isLogin ? "Log in to access your ACTIV8 account." : "Join the AEON ACTIV8 network."}</p>
+
+            {!isLogin && (
+              <div className="fi">
+                <label>CALLSIGN</label>
+                <div className="fi-w">
+                  <span className="fi-i">👤</span>
+                  <input placeholder="Choose your username" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className={err.name?"ie":""} />
+                </div>
+              </div>
+            )}
+
+            <div className="fi">
+              <label>EMAIL</label>
+              <div className="fi-w">
+                <span className="fi-i">✉</span>
+                <input type="email" placeholder="name@domain.com" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} className={err.email?"ie":""} />
+              </div>
+            </div>
+
+            <div className="fi">
+              <label>PASSWORD</label>
+              <div className="fi-w">
+                <span className="fi-i">🔒</span>
+                <input type={showPass ? "text" : "password"} placeholder={isLogin ? "Enter your password" : "Create a password"} value={form.password} onChange={e=>setForm({...form,password:e.target.value})} className={err.password?"ie":""} />
+                <span className="fi-t" onClick={()=>setShowPass(!showPass)}>{showPass ? "👁" : "🙈"}</span>
+              </div>
+              {isLogin && <div style={{textAlign:"right",marginTop:8}}><span className="tog-b" style={{fontSize:12}}>Forgot password?</span></div>}
+            </div>
+
+            {!isLogin && (
+              <div className="fi">
+                <label>CONFIRM PASSWORD</label>
+                <div className="fi-w">
+                  <span className="fi-i">🔒</span>
+                  <input type={showPass ? "text" : "password"} placeholder="Confirm your password" value={form.confirmPassword} onChange={e=>setForm({...form,confirmPassword:e.target.value})} className={err.confirm?"ie":""} />
+                </div>
+              </div>
+            )}
+
             <button className="bp" onClick={submit} disabled={loading}>
-              <span>{loading ? "VERIFYING..." : "CLAIM YOUR SPOT"}</span>
-              {!loading && <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5"/></svg>}
+              <span>{loading ? "VERIFYING..." : (isLogin ? "Log in" : "Create account")}</span>
             </button>
-            
+
+            <div className="div">
+              <div className="div-l" />
+              <div className="div-t">OR</div>
+              <div className="div-l" />
+            </div>
+
+            <div className="soc-g">
+              <button className="sb-b"><span style={{fontSize:18}}>💬</span> Continue with Discord</button>
+              <button className="sb-b"><span style={{fontSize:18}}>G</span> Continue with Google</button>
+            </div>
+
+            <div className="tog">
+              {isLogin ? "New to Aeon Activ8?" : "Already have an account?"}
+              <span className="tog-b" onClick={()=>{setIsLogin(!isLogin); setErr({});}}>{isLogin ? "Create an account" : "Log in"}</span>
+            </div>
+
             <HCaptcha
               ref={captchaRef}
               sitekey="c3ea7102-0442-4b92-b390-a45ec2ca10e6"
@@ -287,11 +342,11 @@ function Gate({ onComplete }) {
               theme="dark"
             />
 
-            <p className="dis">No wallet required. Unrestricted public views accessible via dashboard links.</p>
+            <p className="dis">By continuing, you agree to our <span style={{color:"var(--lq)"}}>Terms of Service</span> and <span style={{color:"var(--lq)"}}>Privacy Policy</span>.</p>
           </div>
         )}
         {step === 1 && (
-          <div className="tm">{lines.map((l,i)=><div key={i} className="tl" style={{animationDelay:`${i*0.05}s`}}><span className="tc">›</span>{l}</div>)}</div>
+          <div className="tm">{lines.map((l,i)=><div key={i} className="tl" style={{animationDelay:`${i*0.05}s`}}><span className="tc2">›</span>{l}</div>)}</div>
         )}
       </div>
     </div>
@@ -1131,34 +1186,47 @@ export default function App() {
  
 .g{position:relative;min-height:100vh;background:var(--v);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .g::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(156,255,59,0.04),transparent 60%);pointer-events:none}
-.gi{position:relative;z-index:2;max-width:420px;width:100%;padding:32px 20px;text-align:center}
-.lr{width:56px;height:56px;border-radius:50%;border:1px solid rgba(156,255,59,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 28px;animation:sp 30s linear infinite}
+.gi{position:relative;z-index:2;max-width:440px;width:100%;padding:32px 20px;text-align:center;animation:fu 0.8s ease}
+.lr{width:56px;height:56px;border-radius:50%;border:1px solid rgba(156,255,59,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;animation:sp 30s linear infinite}
 .ld{width:8px;height:8px;border-radius:50%;background:var(--lq);animation:pg 3s ease infinite}
-.gl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.28em;color:var(--st);text-transform:uppercase;margin-bottom:10px}
-.gt{font-family:'Space Grotesk',sans-serif;font-size:38px;font-weight:700;color:var(--bn);letter-spacing:0.08em;line-height:1;margin-bottom:14px;text-shadow:0 0 40px rgba(156,255,59,0.12)}
-.gs{font-family:'Inter',sans-serif;font-size:14px;color:rgba(244,247,242,0.5);line-height:1.6;margin-bottom:32px}
+.gl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.28em;color:var(--st);text-transform:uppercase;margin-bottom:10px}
+.gt{font-family:'Space Grotesk',sans-serif;font-size:40px;font-weight:700;color:var(--bn);letter-spacing:0.08em;line-height:1;margin-bottom:14px;text-shadow:0 0 40px rgba(156,255,59,0.12)}
+.gs{font-family:'Inter',sans-serif;font-size:16px;color:rgba(244,247,242,0.5);line-height:1.6;margin-bottom:28px}
 .cd{margin-bottom:32px}
-.cdl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.22em;color:var(--st);margin-bottom:10px;text-transform:uppercase}
+.cdl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.22em;color:var(--st);margin-bottom:10px;text-transform:uppercase}
 .cdg{display:flex;justify-content:center;gap:6px}
 .cdg.c{gap:4px}
-.cdc{background:rgba(156,255,59,0.04);border:1px solid rgba(156,255,59,0.12);padding:10px 14px;text-align:center;min-width:56px;border-radius:var(--rd)}
-.cdc.s{padding:8px 10px;min-width:44px}
-.cdv{display:block;font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:600;color:var(--bn)}
-.cdc.s .cdv{font-size:17px}
-.cdu{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--lq);letter-spacing:0.15em;text-transform:uppercase}
+.cdc{background:rgba(156,255,59,0.04);border:1px solid rgba(156,255,59,0.12);padding:10px 14px;text-align:center;min-width:60px;border-radius:var(--rd)}
+.cdc.s{padding:8px 10px;min-width:48px}
+.cdv{display:block;font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:600;color:var(--bn)}
+.cdc.s .cdv{font-size:19px}
+.cdu{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lq);letter-spacing:0.15em;text-transform:uppercase}
 .fb{animation:fu 0.6s ease}
-.sp{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.18em;color:var(--gd);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px}
+.sp{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:0.18em;color:var(--gd);display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px}
 .spd{width:6px;height:6px;border-radius:50%;background:var(--gd);animation:pg 2s ease infinite}
-.fi{margin-bottom:14px;text-align:left}
-.fi label{display:block;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.22em;color:var(--st);margin-bottom:5px;text-transform:uppercase}
-.fi input,.fi textarea,.fi select{width:100%;padding:11px 14px;background:rgba(244,247,242,0.02);border:1px solid var(--bd);border-radius:var(--rd);color:var(--bn);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s}
-.fi select{background:#07100f;color:#9cff3b;font-family:'JetBrains Mono',monospace;font-size:11px}
-.fi input:focus,.fi textarea:focus{border-color:rgba(156,255,59,0.4)}
+.fi{margin-bottom:18px;text-align:left}
+.fi label{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.22em;color:var(--st);margin-bottom:6px;text-transform:uppercase}
+.fi-w{position:relative;display:flex;align-items:center}
+.fi-i{position:absolute;left:14px;color:var(--st);font-size:14px;pointer-events:none}
+.fi-t{position:absolute;right:14px;color:var(--st);cursor:pointer;font-size:14px}
+.fi input,.fi textarea,.fi select{width:100%;padding:13px 14px 13px 40px;background:rgba(244,247,242,0.02);border:1px solid var(--bd);border-radius:var(--rd);color:var(--bn);font-family:'Inter',sans-serif;font-size:15px;outline:none;transition:all 0.2s}
+.fi select{background:#07100f;color:#9cff3b;font-family:'JetBrains Mono',monospace;font-size:13px}
+.fi input:focus{border-color:rgba(156,255,59,0.4);background:rgba(156,255,59,0.02)}
 .fi input.ie{border-color:var(--cr)}
-.bp{width:100%;padding:13px;background:rgba(156,255,59,0.08);border:1px solid rgba(156,255,59,0.35);border-radius:var(--rd);color:var(--lq);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.18em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;margin-top:6px;text-transform:uppercase}
-.bp:hover{background:rgba(156,255,59,0.14);box-shadow:0 0 24px rgba(156,255,59,0.12)}
-.dis{font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(139,150,148,0.5);margin-top:14px;line-height:1.6}
-.tm{text-align:left;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--lq);padding:18px;border:1px solid rgba(156,255,59,0.1);border-radius:var(--rd);background:rgba(7,16,15,0.6);margin-top:20px}
+.bp{width:100%;padding:14px;background:var(--lq);border:1px solid var(--lq);border-radius:var(--rd);color:var(--v);font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;letter-spacing:0.18em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;margin-top:8px;text-transform:uppercase}
+.bp:hover{opacity:0.9;box-shadow:0 0 30px rgba(156,255,59,0.2)}
+.bp:disabled{opacity:0.5;cursor:not-allowed}
+.div{display:flex;align-items:center;margin:24px 0;gap:12px}
+.div-l{flex:1;height:1px;background:var(--bd)}
+.div-t{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--st);letter-spacing:0.1em}
+.soc-g{display:flex;flex-direction:column;gap:10px}
+.sb-b{width:100%;padding:12px;background:rgba(244,247,242,0.02);border:1px solid var(--bd);border-radius:var(--rd);color:var(--bn);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s}
+.sb-b:hover{background:rgba(244,247,242,0.05);border-color:rgba(244,247,242,0.1)}
+.tog{margin-top:28px;font-family:'Inter',sans-serif;font-size:13px;color:rgba(244,247,242,0.5)}
+.tog-b{color:var(--lq);cursor:pointer;text-decoration:none;margin-left:4px}
+.tog-b:hover{text-decoration:underline}
+.dis{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(139,150,148,0.5);margin-top:20px;line-height:1.6}
+.tm{text-align:left;font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--lq);padding:18px;border:1px solid rgba(156,255,59,0.1);border-radius:var(--rd);background:rgba(7,16,15,0.6);margin-top:20px}
 .tl{margin-bottom:7px;animation:fu 0.3s ease both}
 .tc2{color:var(--lq);margin-right:8px}
  
