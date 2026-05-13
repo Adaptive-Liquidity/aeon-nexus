@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { createClient } from "@supabase/supabase-js";
 
@@ -200,7 +200,7 @@ const Icon = {
 
 function Gate({ onComplete }) {
   const captchaRef = useRef(null);
-  const countdown = useCountdown(LAUNCH_DATE);
+  const _countdown = useCountdown(LAUNCH_DATE);
   const [isLogin, setIsLogin] = useState(true);
   const [showPass, setShowPass] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
@@ -227,7 +227,7 @@ function Gate({ onComplete }) {
       } else {
         setTimeout(() => onCaptchaVerify("bypass-token-dev"), 600);
       }
-    } catch (err) {
+    } catch (_err) {
       setTimeout(() => onCaptchaVerify("bypass-token-dev"), 600);
     }
   };
@@ -263,7 +263,7 @@ function Gate({ onComplete }) {
       };
       await store.set("activ8-user", user);
       setTimeout(() => onComplete(user), 2400);
-    } catch (err) { setLoading(false); }
+    } catch (_err) { setLoading(false); }
   };
  
   return (
@@ -507,7 +507,7 @@ function Hub({ user: init, currentPath, onNavigate }) {
 }
 
 // ROUTE: /ask-sophia
-function AskSophiaSurface({ user, onNavigate }) {
+function AskSophiaSurface({ user, onNavigate: _onNavigate }) {
   const [qText, setQText] = useState("");
   const [category, setCategory] = useState("ARCHITECTURE");
   const [risk, setRisk] = useState("LOW");
@@ -606,7 +606,7 @@ function AskSophiaSurface({ user, onNavigate }) {
 }
 
 // ROUTE: /admin/sophia (Protected by Passcode Barrier)
-function AdminSophiaSurface({ onNavigate }) {
+function AdminSophiaSurface({ onNavigate: _onNavigate }) {
   const [authed, setAuthed] = useState(false);
   const [passcode, setPasscode] = useState("");
   const [questions, setQuestions] = useState([]);
@@ -1049,7 +1049,7 @@ function PledgeTab({ user, onPledge }) {
   );
 }
  
-function ReferTab({ user, refLink, copied, onCopy }) {
+function ReferTab({ user: _user, refLink, copied, onCopy }) {
   const msg = `I just joined AEON ACTIV8 — the coordination layer for adaptive economic infrastructure. Genesis spots are limited.\n\nJoin before the window closes: ${refLink}\n\n@all4aeon`;
   const copyMsg = () => { navigator.clipboard?.writeText(msg).catch(()=>{}); };
   return (
