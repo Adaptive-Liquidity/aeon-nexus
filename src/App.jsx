@@ -1226,8 +1226,6 @@ export default function App() {
 .tm{text-align:left;font-family:'JetBrains Mono',monospace;font-size:14px;color:#8CFF3F;padding:24px;border:1px solid rgba(140,255,63,0.15);border-radius:12px;background:rgba(7,16,15,0.7);margin-top:20px}
 .tl{margin-bottom:8px;animation:fu 0.3s ease both}
 .tc2{color:#8CFF3F;margin-right:10px}
-      `}</style>
- 
 .hb{position:relative;min-height:100vh;background:var(--v);overflow-x:hidden}
 .hd{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:rgba(2,4,4,0.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--bd)}
 .hl{display:flex;align-items:center;gap:8px}
