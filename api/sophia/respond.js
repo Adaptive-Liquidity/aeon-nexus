@@ -20,10 +20,10 @@ export default async function handler(req, res) {
 
     // Forward to configured external backend if provided
     if (sophiaCoreUrl && sophiaCoreUrl.trim() !== "") {
-      try {
-        // Ensure we hit the specific respond endpoint
-        const targetUrl = sophiaCoreUrl.endsWith('/') ? `${sophiaCoreUrl}api/sophia/respond` : `${sophiaCoreUrl}/api/sophia/respond`;
+      const targetUrl = sophiaCoreUrl.endsWith('/') ? `${sophiaCoreUrl}api/sophia/respond` : `${sophiaCoreUrl}/api/sophia/respond`;
+      console.log(`[PROXY] Attempting uplink to: ${targetUrl}`);
 
+      try {
         const backendRes = await fetch(targetUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -40,14 +40,20 @@ export default async function handler(req, res) {
 
         if (backendRes.ok) {
           const backendData = await backendRes.json();
+          console.log(`[PROXY] Success: Synthesis received from ${targetUrl}`);
           return res.status(200).json({
             ...backendData,
             response_source: "live"
           });
+        } else {
+          const errorText = await backendRes.text();
+          console.error(`[PROXY] Target returned error status ${backendRes.status}:`, errorText);
         }
       } catch (proxyErr) {
-        console.warn("Vercel Target SOPHIA_CORE_URL endpoint unreachable. Failing over to internal mock engine:", proxyErr);
+        console.error(`[PROXY] Network error connecting to ${targetUrl}:`, proxyErr);
       }
+    } else {
+      console.warn("[PROXY] SOPHIA_CORE_URL is not defined. Using internal mock engine.");
     }
 
     // Embedded Server-Side Mock Engine Fallback
