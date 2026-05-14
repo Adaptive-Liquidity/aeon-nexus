@@ -29,7 +29,12 @@ export default async function handler(req, res) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             question: questionObj.message || "No query provided.",
-            source_surface: "activ8"
+            source_surface: "activ8",
+            context: {
+              user_id: questionObj.userId || "anonymous",
+              queue_item_id: questionObj.id || "unknown",
+              source: "admin_hub"
+            }
           })
         });
 
