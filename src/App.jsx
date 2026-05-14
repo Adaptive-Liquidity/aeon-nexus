@@ -737,12 +737,48 @@ function AdminSophiaSurface({ user, onNavigate }) {
       </div>
 
       {simOutput && (
-        <div className="sim-console">
-          <div className="sim-title">SOPHIA CORE TELEMETRY CAPTURED</div>
-          <pre>{simOutput.reply}</pre>
-          <pre className="cognition-stream">{simOutput.visible_cognition}</pre>
-          <div className="sim-meta">Mode: {simOutput.response_mode} | Broadcasted Event: {simOutput.hub_event}</div>
-          <button className="qbt" onClick={()=>setSimOutput(null)}>DISMISS</button>
+        <div className="admin-briefing-overlay">
+          <div className="briefing-card">
+            <div className="briefing-header">
+              <div className="bh-left">
+                <div className="bh-tag">EXECUTIVE SYNTHESIS PREVIEW</div>
+                <h3 className="bh-title">MODE: {simOutput.response_mode}</h3>
+              </div>
+              <div className="bh-right">
+                <div className={`risk-tag ${simOutput.risk_level}`}>RISK: {simOutput.risk_level}</div>
+                <button className="close-briefing" onClick={()=>setSimOutput(null)}>×</button>
+              </div>
+            </div>
+            
+            <div className="briefing-body">
+              <div className="brief-section">
+                <label>PROPOSED PUBLIC RESPONSE</label>
+                <div className="brief-content reply">{simOutput.reply}</div>
+              </div>
+              
+              <div className="brief-grid">
+                <div className="brief-section">
+                  <label>COGNITIVE TELEMETRY (VISIBLE)</label>
+                  <pre className="brief-content cognition">{simOutput.visible_cognition}</pre>
+                </div>
+                <div className="brief-section">
+                  <label>INTERNAL ROUTING</label>
+                  <div className="brief-meta">
+                    <div className="bm-row"><span>SOURCE</span> <strong>{simOutput.response_source}</strong></div>
+                    <div className="bm-row"><span>CLAIM STATUS</span> <strong>{simOutput.claim_status}</strong></div>
+                    <div className="bm-row"><span>HUB EVENT</span> <strong>{simOutput.hub_event}</strong></div>
+                    <div className="bm-row"><span>SAFE BROADCAST</span> <strong style={{color: simOutput.public_safe ? "var(--lq)" : "#ff4d4d"}}>{simOutput.public_safe ? "VERIFIED" : "WARNING"}</strong></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="briefing-footer">
+              <button className="act-btn approve" onClick={()=>{updateStatus(simOutput.questionId || simOutput.id, "approved"); setSimOutput(null)}}>APPROVE SYNTHESIS</button>
+              <button className="act-btn feature" onClick={()=>{updateStatus(simOutput.questionId || simOutput.id, "featured"); setSimOutput(null)}}>FEATURE ON LIVE STREAM</button>
+              <button className="act-btn reject" onClick={()=>{updateStatus(simOutput.questionId || simOutput.id, "rejected"); setSimOutput(null)}}>REJECT OUTPUT</button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -755,26 +791,35 @@ function AdminSophiaSurface({ user, onNavigate }) {
 
       <div className="q-table">
         {filtered.length === 0 ? <div className="pn">No records matching active query criteria.</div> : filtered.map(q => (
-          <div key={q.id} className="q-row">
-            <div className="qr-top">
-              <span className="qr-id">{q.callsign} <small>({q.category})</small></span>
-              <span className="qr-score">Priority: <strong>{q.priorityScore}</strong></span>
-              <span className={`qr-status ${q.status}`}>{q.status.toUpperCase()}</span>
-              {q.status === "answered" && <span className="qr-badge">READY FOR REVIEW</span>}
-              <span className={`qr-risk ${q.riskLevel}`}>{q.riskLevel} RISK</span>
+          <div key={q.id} className={`q-row-v2 ${q.status}`}>
+            <div className="qrv2-sidebar">
+              <div className="qrv2-dot" />
             </div>
-            <div className="qr-body">{q.question}</div>
-            <div className="qr-controls">
-              {q.status === "submitted" && <button className="act-btn" onClick={()=>updateStatus(q.id, "queued")}>Queue</button>}
-              {q.status !== "approved" && <button className="act-btn approve" onClick={()=>updateStatus(q.id, "approved")}>Approve</button>}
-              <button className="act-btn boost" onClick={()=>boostScore(q.id)}>Boost(+100)</button>
-              <button className={`act-btn sim ${q.status === 'answered' ? 'pulse' : ''}`} onClick={()=>handleProxyCall(q)}>
-                {q.status === 'answered' ? 'Preview Synthesis' : 'Trigger Core Response'}
-              </button>
-              <button className="act-btn feature" onClick={()=>updateStatus(q.id, "featured")}>Feature on Live</button>
-              <button className="act-btn" onClick={()=>updateStatus(q.id, "faq")}>Mark FAQ</button>
-              <button className="act-btn" onClick={()=>updateStatus(q.id, "escalated")}>Escalate</button>
-              <button className="act-btn reject" onClick={()=>updateStatus(q.id, "rejected")}>Reject</button>
+            <div className="qrv2-main">
+              <div className="qrv2-header">
+                <div className="qrv2-info">
+                  <span className="qrv2-callsign">{q.callsign}</span>
+                  <span className="qrv2-meta">{q.category} • P{q.priorityScore}</span>
+                </div>
+                <div className="qrv2-tags">
+                  <span className={`qrv2-status-tag ${q.status}`}>{q.status}</span>
+                  <span className={`qrv2-risk-tag ${q.riskLevel}`}>{q.riskLevel}</span>
+                </div>
+              </div>
+              <div className="qrv2-body">"{q.question}"</div>
+              <div className="qrv2-controls">
+                <div className="qrv2-primary-actions">
+                  {q.status === "submitted" && <button className="act-btn-v2" onClick={()=>updateStatus(q.id, "queued")}>Queue</button>}
+                  <button className={`act-btn-v2 highlight ${q.status === 'answered' ? 'pulse' : ''}`} onClick={()=>handleProxyCall(q)}>
+                    {q.status === 'answered' ? 'Review & Approve' : 'Trigger Synthesis'}
+                  </button>
+                </div>
+                <div className="qrv2-secondary-actions">
+                  <button className="act-btn-v2" onClick={()=>boostScore(q.id)}>Boost</button>
+                  <button className="act-btn-v2" onClick={()=>updateStatus(q.id, "faq")}>FAQ</button>
+                  <button className="act-btn-v2 reject" onClick={()=>updateStatus(q.id, "rejected")}>Reject</button>
+                </div>
+              </div>
             </div>
           </div>
         ))}
@@ -1526,6 +1571,55 @@ export default function App() {
 .wlv{font-family:'Inter',sans-serif;font-size:12px;color:rgba(244,247,242,0.7);display:flex;align-items:center;gap:6px}
 .wlv.gn{color:var(--lq)}
 .wlp{font-family:'JetBrains Mono',monospace;font-size:8px;background:rgba(156,255,59,0.1);border:1px solid rgba(156,255,59,0.2);color:var(--lq);padding:1px 6px;border-radius:2px;letter-spacing:0.1em}
+/* Executive Admin Hub V2 */
+.admin-briefing-overlay { position: fixed; inset: 0; background: rgba(2,4,4,0.92); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px; text-align: left; }
+.briefing-card { background: #0a0d0d; border: 1px solid var(--bd); width: 100%; max-width: 800px; border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 40px 100px -20px rgba(0,0,0,0.8); }
+.briefing-header { padding: 20px 24px; border-bottom: 1px solid var(--bd); display: flex; justify-content: space-between; align-items: center; background: rgba(244,247,242,0.02); }
+.bh-tag { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--st); letter-spacing: 0.15em; margin-bottom: 4px; }
+.bh-title { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 700; color: var(--bn); margin: 0; }
+.risk-tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 4px 10px; border-radius: 2px; border: 1px solid; text-transform: uppercase; }
+.risk-tag.low { color: var(--lq); border-color: rgba(156,255,59,0.3); background: rgba(156,255,59,0.05); }
+.risk-tag.high { color: #ff4d4d; border-color: rgba(255,77,77,0.3); background: rgba(255,77,77,0.05); }
+.close-briefing { background: none; border: none; color: var(--st); font-size: 24px; cursor: pointer; padding: 0 0 0 20px; }
+.briefing-body { padding: 24px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; max-height: 70vh; }
+.brief-section label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--st); margin-bottom: 10px; letter-spacing: 0.1em; opacity: 0.7; }
+.brief-content { background: rgba(244,247,242,0.02); border: 1px solid var(--bd); border-radius: 4px; padding: 16px; font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.6; color: var(--fg); }
+.brief-content.reply { border-left: 3px solid var(--lq); }
+.brief-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; }
+.brief-content.cognition { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--lq); max-height: 180px; overflow-y: auto; white-space: pre-wrap; }
+.brief-meta { display: flex; flex-direction: column; gap: 10px; }
+.bm-row { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 10px; border-bottom: 1px solid rgba(244,247,242,0.05); padding-bottom: 8px; }
+.bm-row span { color: var(--st); }
+.bm-row strong { color: var(--bn); }
+.briefing-footer { padding: 20px 24px; background: rgba(244,247,242,0.01); border-top: 1px solid var(--bd); display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 12px; }
+
+.q-row-v2 { display: flex; border: 1px solid var(--bd); border-radius: 4px; margin-bottom: 12px; background: rgba(244,247,242,0.01); transition: all 0.2s; overflow: hidden; text-align: left; }
+.q-row-v2:hover { border-color: rgba(156,255,59,0.15); background: rgba(244,247,242,0.02); }
+.qrv2-sidebar { width: 6px; background: var(--bd); flex-shrink: 0; }
+.q-row-v2.answered .qrv2-sidebar { background: var(--lq); }
+.q-row-v2.featured .qrv2-sidebar { background: var(--sg); }
+.q-row-v2.rejected .qrv2-sidebar { background: #ff4d4d; }
+.qrv2-main { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.qrv2-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.qrv2-callsign { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; color: var(--bn); display: block; }
+.qrv2-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--st); margin-top: 2px; }
+.qrv2-tags { display: flex; gap: 6px; }
+.qrv2-status-tag { font-family: 'JetBrains Mono', monospace; font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 2px; border: 1px solid rgba(244,247,242,0.1); text-transform: uppercase; color: var(--st); }
+.qrv2-status-tag.answered { color: var(--lq); border-color: rgba(156,255,59,0.3); background: rgba(156,255,59,0.05); }
+.qrv2-risk-tag { font-family: 'JetBrains Mono', monospace; font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 2px; border: 1px solid rgba(156,255,59,0.2); color: var(--lq); text-transform: uppercase; }
+.qrv2-risk-tag.high { color: #ff4d4d; border-color: rgba(255,77,77,0.2); }
+.qrv2-body { font-family: 'Inter', sans-serif; font-size: 13px; color: rgba(244,247,242,0.8); line-height: 1.5; }
+.qrv2-controls { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(244,247,242,0.05); padding-top: 12px; }
+.qrv2-primary-actions, .qrv2-secondary-actions { display: flex; gap: 8px; }
+.act-btn-v2 { background: rgba(244,247,242,0.03); border: 1px solid var(--bd); color: var(--st); font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 6px 12px; border-radius: 3px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.05em; }
+.act-btn-v2:hover { border-color: var(--st); color: var(--bn); }
+.act-btn-v2.highlight { border-color: var(--lq); color: var(--lq); background: rgba(156,255,59,0.05); }
+.act-btn-v2.pulse { animation: cmd-pulse 2s infinite; }
+@keyframes cmd-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(156,255,59, 0.2); }
+  70% { box-shadow: 0 0 0 6px rgba(156,255,59, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(156,255,59, 0); }
+}
       `}</style>
       {phase === PHASES.GATE && <Gate onComplete={(u)=>{setUser(u);setPhase(PHASES.HUB)}} />}
       {phase === PHASES.HUB && <Hub user={user} currentPath={currentPath} onNavigate={handleNavigate} />}
