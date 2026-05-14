@@ -16,9 +16,10 @@ export default async function handler(req, res) {
 
   try {
     const questionObj = req.body?.question || {};
-    const sophiaCoreUrl = process.env.SOPHIA_CORE_URL;
+    // Use environment variable if present, otherwise fallback to the known production URL
+    const sophiaCoreUrl = process.env.SOPHIA_CORE_URL || "https://sophia-core-api.vercel.app";
 
-    // Forward to configured external backend if provided
+    // Forward to configured external backend
     if (sophiaCoreUrl && sophiaCoreUrl.trim() !== "") {
       const targetUrl = sophiaCoreUrl.endsWith('/') ? `${sophiaCoreUrl}api/sophia/respond` : `${sophiaCoreUrl}/api/sophia/respond`;
       console.log(`[PROXY] Attempting uplink to: ${targetUrl}`);

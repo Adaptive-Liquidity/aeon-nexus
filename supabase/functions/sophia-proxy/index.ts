@@ -15,7 +15,7 @@ serve(async (req) => {
     const body = await req.json()
     const questionObj = body?.question || {}
 
-    const sophiaCoreUrl = Deno.env.get("SOPHIA_CORE_URL")
+    const sophiaCoreUrl = Deno.env.get("SOPHIA_CORE_URL") || "https://sophia-core-api.vercel.app"
  
     // If external backend routing is active, proxy the payload securely
     if (sophiaCoreUrl && sophiaCoreUrl.trim() !== "") {
