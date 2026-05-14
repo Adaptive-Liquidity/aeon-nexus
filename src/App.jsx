@@ -537,8 +537,32 @@ function AskSophiaSurface({ user, onNavigate: _onNavigate }) {
       referrals: 0
     };
     storageController.saveCollection("sophia_questions", [newQ, ...questions]);
-    setStatusMsg(`Inquiry logged successfully. Initialized Queue Status: [SUBMITTED] with Priority Score: ${calculatedPriority}`);
+    setStatusMsg(`Inquiry logged successfully. [ID: ${newQ.id}] Initiating secure uplink to Sophia Core...`);
     setQText("");
+
+    // AUTO-SYNTHESIS: Trigger the server-side proxy call immediately
+    callSophiaCoreProxy(newQ, (resData) => {
+      // 1. Save the response to the answers collection
+      const answers = storageController.getCollection("sophia_answers");
+      const newAnswer = {
+        questionId: newQ.id,
+        reply: resData.reply,
+        responseMode: resData.response_mode,
+        visibleCognition: resData.visible_cognition,
+        claimStatus: resData.claim_status,
+        responseSource: resData.response_source,
+        featured: false, // Wait for Admin to approve/feature
+        answeredAt: Date.now()
+      };
+      storageController.saveCollection("sophia_answers", [newAnswer, ...answers]);
+
+      // 2. Update the question status to 'answered' so Admin knows it's ready for review
+      const currentQs = storageController.getCollection("sophia_questions");
+      const updatedQs = currentQs.map(q => q.id === newQ.id ? { ...q, status: "answered" } : q);
+      storageController.saveCollection("sophia_questions", updatedQs);
+      
+      setStatusMsg(`Inquiry processed. Synthesis captured and routed to ACTIV8 Admin for final review.`);
+    });
     
     // Broadcast queue update event
     const events = storageController.getCollection("hub_events");
@@ -656,6 +680,20 @@ function AdminSophiaSurface({ user, onNavigate }) {
   };
 
   const handleProxyCall = (qObj) => {
+    // Check if we already have a captured synthesis for this question
+    const answers = storageController.getCollection("sophia_answers");
+    const existing = answers.find(a => a.questionId === qObj.id);
+
+    if (existing) {
+      // Re-map schema for UI display if needed (consistency check)
+      setSimOutput({
+        ...existing,
+        visible_cognition: existing.visibleCognition, // frontend uses snake_case in some previews
+        response_mode: existing.responseMode
+      });
+      return;
+    }
+
     updateStatus(qObj.id, "answering");
     callSophiaCoreProxy(qObj, (resData) => {
       setSimOutput(resData);
@@ -722,6 +760,7 @@ function AdminSophiaSurface({ user, onNavigate }) {
               <span className="qr-id">{q.callsign} <small>({q.category})</small></span>
               <span className="qr-score">Priority: <strong>{q.priorityScore}</strong></span>
               <span className={`qr-status ${q.status}`}>{q.status.toUpperCase()}</span>
+              {q.status === "answered" && <span className="qr-badge">READY FOR REVIEW</span>}
               <span className={`qr-risk ${q.riskLevel}`}>{q.riskLevel} RISK</span>
             </div>
             <div className="qr-body">{q.question}</div>
@@ -729,7 +768,9 @@ function AdminSophiaSurface({ user, onNavigate }) {
               {q.status === "submitted" && <button className="act-btn" onClick={()=>updateStatus(q.id, "queued")}>Queue</button>}
               {q.status !== "approved" && <button className="act-btn approve" onClick={()=>updateStatus(q.id, "approved")}>Approve</button>}
               <button className="act-btn boost" onClick={()=>boostScore(q.id)}>Boost(+100)</button>
-              <button className="act-btn sim" onClick={()=>handleProxyCall(q)}>Trigger Core Response</button>
+              <button className={`act-btn sim ${q.status === 'answered' ? 'pulse' : ''}`} onClick={()=>handleProxyCall(q)}>
+                {q.status === 'answered' ? 'Preview Synthesis' : 'Trigger Core Response'}
+              </button>
               <button className="act-btn feature" onClick={()=>updateStatus(q.id, "featured")}>Feature on Live</button>
               <button className="act-btn" onClick={()=>updateStatus(q.id, "faq")}>Mark FAQ</button>
               <button className="act-btn" onClick={()=>updateStatus(q.id, "escalated")}>Escalate</button>
@@ -1304,6 +1345,12 @@ export default function App() {
 .qr-status.answered,.qr-status.featured { background: rgba(156,255,59,0.2); color: var(--lq); border: 1px solid; }
 .qr-status.rejected { background: rgba(255,77,77,0.1); color: #ff4d4d; }
 .qr-status.faq,.qr-status.escalated { background: rgba(139,150,148,0.2); color: var(--bn); }
+.qr-badge { font-family: 'JetBrains Mono', monospace; font-size: 8px; background: var(--lq); color: #020404; padding: 1px 6px; border-radius: 2px; font-weight: 800; margin-left: 8px; animation: pulse 2s infinite; }
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
 
 .qr-risk.LOW { color: #9cff3b; font-size: 8px; }
 .qr-risk.HIGH { color: #ff4d4d; font-size: 8px; font-weight: 700; }
