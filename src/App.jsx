@@ -1325,6 +1325,7 @@ export default function App() {
 
 .sim-console { border: 1px solid var(--gd); background: rgba(215,177,91,0.03); padding: 14px; border-radius: var(--rd); margin-bottom: 16px; text-align: left; }
 .sim-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--gd); margin-bottom: 8px; font-weight: 600; }
+.sim-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 8px; color: var(--st); margin-bottom: 10px; text-transform: uppercase; }
 .sim-console pre { font-family: 'Inter', sans-serif; font-size: 12px; color: var(--bn); white-space: pre-wrap; margin-bottom: 8px; }
 .cognition-stream { font-family: 'JetBrains Mono', monospace !important; font-size: 10px !important; color: var(--lq) !important; background: rgba(2,4,4,0.6); padding: 8px; border-left: 2px solid var(--lq); }
 .sim-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--st); margin-bottom: 10px; }

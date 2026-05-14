@@ -57,13 +57,15 @@ serve(async (req) => {
     
     const responseData = {
       reply: `>> [SIMULATED] SOPHIA CORE ANSWER: ${selectedReply}`,
-      response_mode: "ANALYTICAL SYNTHESIS",
+      response_mode: "Guardian",
       response_source: "simulated",
-      risk_level: questionObj.riskLevel || "LOW",
+      claim_status: "simulated",
+      risk_level: (questionObj.riskLevel || "low").toLowerCase(),
       public_safe: true,
+      needs_admin_review: false,
       visible_cognition: `>> INGESTING QUESTION PAYLOAD [ID: ${questionObj.id || 'anon'}]\n>> EVALUATING PRIORITY WEIGHTS: ${questionObj.priorityScore || 100}\n>> DEPLOYING COGNITIVE HEURISTICS...\n>> OUTPUT VERIFIED BY PROTOCOL.`,
       hub_event: `Sophia answered inquiry from ${questionObj.callsign || 'ANON-SIGNALER'}`,
-      recommended_surface: "SOPHIA_LIVE"
+      recommended_surface: "sophia-live"
     }
 
     return new Response(JSON.stringify(responseData), {
