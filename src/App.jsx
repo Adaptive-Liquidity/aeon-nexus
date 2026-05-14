@@ -744,42 +744,47 @@ function AdminSophiaSurface({ user, onNavigate }) {
 
 // ROUTE: /sophia-live
 function SophiaLiveSurface({ onNavigate }) {
-  const answers = storageController.getCollection("sophia_answers");
+  const answers = [...storageController.getCollection("sophia_answers")].sort((a,b) => (b.answeredAt||0) - (a.answeredAt||0));
   const questions = storageController.getCollection("sophia_questions");
   
-  // Find currently featured answer
-  const featuredAns = answers.find(a => a.featured) || answers[0];
-  const relatedQ = featuredAns ? questions.find(q => q.id === featuredAns.questionId) : null;
-  const recentSelected = answers.filter(a => a.questionId !== featuredAns?.questionId).slice(0, 4);
+  const featuredAnswers = answers.filter(a => a.featured).slice(0, 5);
+  const others = answers.filter(a => !featuredAnswers.find(f => f.questionId === a.questionId)).slice(0, 6);
 
   return (
     <div className="surface-card sophia-live-view">
       <div className="live-header">
         <div className="lh-status"><span className="spd" /> SOPHIA COGNITIVE TELEMETRY STREAM</div>
-        <div className="lh-mode">MODE: {featuredAns?.responseMode || "AUTONOMOUS WAITING"}</div>
+        <div className="lh-mode">ACTIVE UPLINK: {featuredAnswers.length > 0 ? "STABLE" : "IDLE"}</div>
       </div>
 
-      {featuredAns ? (
-        <div className="featured-cognition-box">
-          <div className="fcb-top">
-            <span className="fcb-label">FEATURED SYNTHESIS</span>
-            <span className="fcb-author">INQUIRY BY: {relatedQ?.callsign || "GENESIS PROTOCOL"}</span>
-          </div>
-          <div className="fcb-question">"{relatedQ?.question || "Awaiting target input stream."}"</div>
-          <div className="fcb-reply">{featuredAns.reply}</div>
-          
-          <div className="fcb-term-title">VISIBLE COGNITION ENGINE LOGS</div>
-          <pre className="fcb-cognition-term">{featuredAns.visibleCognition}</pre>
-        </div>
-      ) : (
-        <div className="pn">No featured answers streaming. Submit an inquiry through the intake queue.</div>
-      )}
+      <div className="featured-feed">
+        {featuredAnswers.length > 0 ? featuredAnswers.map((ans, idx) => {
+          const rq = questions.find(q => q.id === ans.questionId);
+          return (
+            <div key={idx} className="featured-cognition-box" style={{animationDelay: `${idx * 0.1}s`}}>
+              <div className="fcb-top">
+                <span className="fcb-label">CORE SYNTHESIS {idx === 0 ? "[LATEST]" : ""}</span>
+                <span className="fcb-author">INQUIRY BY: {rq?.callsign || "GENESIS PROTOCOL"}</span>
+              </div>
+              <div className="fcb-question">"{rq?.question || "Awaiting target input stream."}"</div>
+              <div className="fcb-reply">{ans.reply}</div>
+              
+              <details className="cognition-details">
+                <summary className="fcb-term-title">EXPAND COGNITION ENGINE LOGS</summary>
+                <pre className="fcb-cognition-term">{ans.visibleCognition}</pre>
+              </details>
+            </div>
+          );
+        }) : (
+          <div className="pn">No featured answers streaming. Submit an inquiry through the intake queue.</div>
+        )}
+      </div>
 
-      {recentSelected.length > 0 && (
-        <div className="recent-answers-block">
-          <div className="sl">RECENT TELEMETRY OUTPUTS</div>
+      {others.length > 0 && (
+        <div className="recent-answers-block" style={{marginTop: 30}}>
+          <div className="sl">ARCHIVED TELEMETRY OUTPUTS</div>
           <div className="ra-grid">
-            {recentSelected.map((ans, idx) => {
+            {others.map((ans, idx) => {
               const rq = questions.find(q => q.id === ans.questionId);
               return (
                 <div key={idx} className="ra-card">
@@ -1311,6 +1316,12 @@ export default function App() {
 .act-btn.sim { background: rgba(215,177,91,0.08); color: var(--gd); border-color: rgba(215,177,91,0.3); }
 .act-btn.feature { background: rgba(156,255,59,0.08); color: var(--lq); border-color: var(--lq); }
 .act-btn.reject { color: #ff4d4d; }
+ 
+.featured-feed { display: flex; flex-direction: column; gap: 20px; }
+.cognition-details { margin-top: 14px; border-top: 1px solid rgba(244,247,242,0.05); padding-top: 10px; }
+.cognition-details summary { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--st); cursor: pointer; list-style: none; outline: none; transition: color 0.2s; }
+.cognition-details summary:hover { color: var(--lq); }
+.cognition-details summary::-webkit-details-marker { display: none; }
 
 .sim-console { border: 1px solid var(--gd); background: rgba(215,177,91,0.03); padding: 14px; border-radius: var(--rd); margin-bottom: 16px; text-align: left; }
 .sim-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--gd); margin-bottom: 8px; font-weight: 600; }
