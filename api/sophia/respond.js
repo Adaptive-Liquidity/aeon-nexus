@@ -21,15 +21,24 @@ export default async function handler(req, res) {
     // Forward to configured external backend if provided
     if (sophiaCoreUrl && sophiaCoreUrl.trim() !== "") {
       try {
-        const backendRes = await fetch(sophiaCoreUrl, {
+        // Ensure we hit the specific respond endpoint
+        const targetUrl = sophiaCoreUrl.endsWith('/') ? `${sophiaCoreUrl}api/sophia/respond` : `${sophiaCoreUrl}/api/sophia/respond`;
+
+        const backendRes = await fetch(targetUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: questionObj })
+          body: JSON.stringify({ 
+            question: questionObj.message || "No query provided.",
+            source_surface: "activ8"
+          })
         });
 
         if (backendRes.ok) {
           const backendData = await backendRes.json();
-          return res.status(200).json(backendData);
+          return res.status(200).json({
+            ...backendData,
+            response_source: "live"
+          });
         }
       } catch (proxyErr) {
         console.warn("Vercel Target SOPHIA_CORE_URL endpoint unreachable. Failing over to internal mock engine:", proxyErr);
@@ -45,8 +54,9 @@ export default async function handler(req, res) {
     const selectedReply = replies[Math.floor(Math.random() * replies.length)];
     
     const responseData = {
-      reply: `>> SOPHIA CORE ANSWER: ${selectedReply}`,
+      reply: `>> [SIMULATED] SOPHIA CORE ANSWER: ${selectedReply}`,
       response_mode: "ANALYTICAL SYNTHESIS",
+      response_source: "simulated",
       risk_level: questionObj.riskLevel || "LOW",
       public_safe: true,
       visible_cognition: `>> INGESTING QUESTION PAYLOAD [ID: ${questionObj.id || 'anon'}]\n>> EVALUATING PRIORITY WEIGHTS: ${questionObj.priorityScore || 100}\n>> DEPLOYING COGNITIVE HEURISTICS...\n>> OUTPUT VERIFIED BY PROTOCOL.`,
