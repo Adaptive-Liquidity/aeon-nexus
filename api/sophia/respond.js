@@ -28,7 +28,7 @@ export default async function handler(req, res) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
-            question: questionObj.message || "No query provided.",
+            question: questionObj.question || "No query provided.",
             source_surface: "activ8",
             context: {
               user_id: questionObj.userId || "anonymous",
