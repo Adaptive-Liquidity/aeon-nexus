@@ -435,6 +435,7 @@ const callSophiaCoreProxy = async (questionObj, onResult) => {
  
 function Hub({ user: init, currentPath, onNavigate }) {
   const [user, setUser] = useState(init);
+  const isAdmin = user?.email === "contact@adaptiveliquidity.com";
   const [tab, setTab] = useState("home");
   const [copied, setCopied] = useState(false);
   const refLink = `https://aeon.activ8.network/join?ref=${user?.ref || "GENESIS"}`;
@@ -464,7 +465,7 @@ function Hub({ user: init, currentPath, onNavigate }) {
           <button className={`hn-btn ${currentPath==="/launch"?"ac":""}`} onClick={()=>onNavigate("/launch")}>/launch</button>
           <button className={`hn-btn ${currentPath==="/overlay"?"ac":""}`} onClick={()=>onNavigate("/overlay")}>/overlay</button>
           <button className={`hn-btn ${currentPath==="/standby"?"ac":""}`} onClick={()=>onNavigate("/standby")}>/standby</button>
-          <button className={`hn-btn admin ${currentPath==="/admin/sophia"?"ac":""}`} onClick={()=>onNavigate("/admin/sophia")}>[Admin]</button>
+          {isAdmin && <button className={`hn-btn admin ${currentPath==="/admin/sophia"?"ac":""}`} onClick={()=>onNavigate("/admin/sophia")}>[Admin]</button>}
         </div>
         {user ? (
           <div className="hu">
@@ -484,7 +485,7 @@ function Hub({ user: init, currentPath, onNavigate }) {
       {/* Surface Multiplexer based on Path State */}
       <div className="surface-container">
         {currentPath === "/ask-sophia" && <AskSophiaSurface user={user} onNavigate={onNavigate} />}
-        {currentPath === "/admin/sophia" && <AdminSophiaSurface onNavigate={onNavigate} />}
+        {currentPath === "/admin/sophia" && <AdminSophiaSurface user={user} onNavigate={onNavigate} />}
         {currentPath === "/sophia-live" && <SophiaLiveSurface onNavigate={onNavigate} />}
         {currentPath === "/hub" && <PublicHubSurface onNavigate={onNavigate} />}
         {currentPath === "/links" && <LinksSurface />}
@@ -605,8 +606,9 @@ function AskSophiaSurface({ user, onNavigate: _onNavigate }) {
   );
 }
 
-// ROUTE: /admin/sophia (Protected by Passcode Barrier)
-function AdminSophiaSurface({ onNavigate: _onNavigate }) {
+// ROUTE: /admin/sophia (Protected by Admin Identity & Passcode)
+function AdminSophiaSurface({ user, onNavigate }) {
+  const isAdmin = user?.email === "contact@adaptiveliquidity.com";
   const [authed, setAuthed] = useState(false);
   const [passcode, setPasscode] = useState("");
   const [questions, setQuestions] = useState([]);
@@ -614,12 +616,17 @@ function AdminSophiaSurface({ onNavigate: _onNavigate }) {
   const [simOutput, setSimOutput] = useState(null);
 
   useEffect(() => {
+    // If not the designated admin, force exit immediately
+    if (!isAdmin) {
+      onNavigate("/hub");
+      return;
+    }
     // Check safe memory session barrier
     if (storageController.safeGet("activ8_admin_unlocked") === true) {
       setAuthed(true);
       setQuestions(storageController.getCollection("sophia_questions"));
     }
-  }, []);
+  }, [isAdmin, onNavigate]);
 
   const handleUnlock = () => {
     if (passcode === "ACTIV8-ADMIN-2026") {
