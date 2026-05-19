@@ -1,3 +1,5 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+// @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
@@ -6,7 +8,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { 
@@ -19,6 +21,7 @@ serve(async (req) => {
     const body = await req.json()
     const questionObj = body?.question || {}
 
+    // @ts-ignore
     const sophiaCoreUrl = Deno.env.get("SOPHIA_CORE_URL") || "https://sophia-core-api.vercel.app"
  
     // If external backend routing is active, proxy the payload securely
@@ -82,7 +85,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     })
 
-  } catch (error) {
+  } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" }

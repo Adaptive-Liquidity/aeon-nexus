@@ -1,0 +1,120 @@
+<h2>Proposed layout and component system</h2>
+<p class="subtitle">A cleaner high-tech SaaS shell for ACTIV8/Sophia. This preserves the product flows but makes the interface feel built, calm, and operational.</p>
+
+<div class="mockup">
+  <div class="mockup-header">Desktop app shell: sidebar + command header + active workspace</div>
+  <div class="mockup-body">
+    <div style="background:#05080a;border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;color:#f6faf9;font-family:Inter,system-ui;">
+      <div style="display:grid;grid-template-columns:220px 1fr;min-height:560px;">
+        <aside style="background:#080d10;border-right:1px solid rgba(255,255,255,.08);padding:18px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:26px;">
+            <div style="width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,#86ff58,#18c8ff);box-shadow:0 0 24px rgba(134,255,88,.18);"></div>
+            <div>
+              <div style="font-weight:800;letter-spacing:.08em;font-size:13px;">AEON ACTIV8</div>
+              <div style="font:600 9px monospace;color:#829096;letter-spacing:.12em;">SOPHIA ACCESS</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="height:36px;border-radius:8px;background:rgba(134,255,88,.12);border:1px solid rgba(134,255,88,.28);display:flex;align-items:center;padding:0 12px;font:700 11px monospace;color:#b9ff9b;">Ask Sophia</div>
+            <div style="height:36px;border-radius:8px;background:rgba(255,255,255,.035);display:flex;align-items:center;padding:0 12px;font:600 11px monospace;color:#93a0a6;">Sophia Live</div>
+            <div style="height:36px;border-radius:8px;background:rgba(255,255,255,.025);display:flex;align-items:center;padding:0 12px;font:600 11px monospace;color:#7d898f;">Hub</div>
+            <div style="height:36px;border-radius:8px;background:rgba(255,255,255,.025);display:flex;align-items:center;padding:0 12px;font:600 11px monospace;color:#7d898f;">Launch</div>
+            <div style="height:36px;border-radius:8px;background:rgba(255,255,255,.025);display:flex;align-items:center;padding:0 12px;font:600 11px monospace;color:#7d898f;">Verified Links</div>
+          </div>
+          <div style="margin-top:auto;padding-top:190px;">
+            <div style="border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;background:rgba(255,255,255,.025);">
+              <div style="font:700 9px monospace;color:#829096;letter-spacing:.12em;">PASSPORT</div>
+              <div style="font-weight:800;font-size:22px;margin-top:6px;">150</div>
+              <div style="font:600 10px monospace;color:#86ff58;">REP SCORE</div>
+            </div>
+          </div>
+        </aside>
+
+        <main style="background:radial-gradient(circle at 78% 10%,rgba(24,200,255,.09),transparent 26%),#05080a;">
+          <header style="height:66px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+            <div>
+              <div style="font:700 10px monospace;color:#86ff58;letter-spacing:.16em;">SOPHIA CORE / INTAKE</div>
+              <div style="font-size:22px;font-weight:800;margin-top:2px;">Ask Sophia</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="font:700 10px monospace;color:#18c8ff;border:1px solid rgba(24,200,255,.22);background:rgba(24,200,255,.06);border-radius:999px;padding:7px 10px;">UPLINK STABLE</div>
+              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#86ff58,#18c8ff);color:#05100a;display:flex;align-items:center;justify-content:center;font-weight:900;">G</div>
+            </div>
+          </header>
+
+          <section style="padding:24px;display:grid;grid-template-columns:minmax(0,1.5fr) 310px;gap:20px;">
+            <div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;">
+                <div style="border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:10px;padding:14px;">
+                  <div style="font:700 9px monospace;color:#829096;letter-spacing:.13em;">QUEUE DEPTH</div>
+                  <div style="font-weight:900;font-size:28px;margin-top:6px;">18</div>
+                </div>
+                <div style="border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:10px;padding:14px;">
+                  <div style="font:700 9px monospace;color:#829096;letter-spacing:.13em;">RISK STATE</div>
+                  <div style="font-weight:900;font-size:28px;margin-top:6px;color:#86ff58;">LOW</div>
+                </div>
+                <div style="border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:10px;padding:14px;">
+                  <div style="font:700 9px monospace;color:#829096;letter-spacing:.13em;">PHASE</div>
+                  <div style="font-weight:900;font-size:20px;margin-top:10px;color:#d9b96b;">QUEUE LIVE</div>
+                </div>
+              </div>
+
+              <div style="border:1px solid rgba(134,255,88,.2);background:linear-gradient(135deg,rgba(134,255,88,.07),rgba(24,200,255,.035));border-radius:12px;padding:18px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                  <div style="font-weight:850;font-size:20px;">Question intake</div>
+                  <div style="font:700 10px monospace;color:#86ff58;">PRIORITY AUTO-CALC</div>
+                </div>
+                <div style="height:118px;background:#030607;border:1px solid rgba(255,255,255,.08);border-radius:10px;margin-bottom:12px;"></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                  <div style="height:42px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);border-radius:8px;"></div>
+                  <div style="height:42px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);border-radius:8px;"></div>
+                </div>
+                <div style="height:46px;background:#86ff58;color:#041006;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:900;">Transmit to Sophia</div>
+              </div>
+            </div>
+
+            <aside style="display:flex;flex-direction:column;gap:12px;">
+              <div style="border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:12px;padding:16px;">
+                <div style="font:700 9px monospace;color:#829096;letter-spacing:.13em;">FEATURED SYNTHESIS</div>
+                <div style="font-size:14px;line-height:1.45;margin-top:10px;color:#dbe3e1;">Latest approved Sophia answer appears here with clean status labels and a collapsible cognition log.</div>
+              </div>
+              <div style="border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:12px;padding:16px;">
+                <div style="font:700 9px monospace;color:#829096;letter-spacing:.13em;">VERIFIED LINKS</div>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
+                  <div style="height:28px;border-radius:7px;background:rgba(24,200,255,.08);"></div>
+                  <div style="height:28px;border-radius:7px;background:rgba(255,255,255,.04);"></div>
+                  <div style="height:28px;border-radius:7px;background:rgba(255,255,255,.04);"></div>
+                </div>
+              </div>
+            </aside>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="split">
+  <div class="section">
+    <h3>Core components</h3>
+    <ul>
+      <li><strong>App shell:</strong> persistent left nav, top command header, account/status cluster.</li>
+      <li><strong>Metric tiles:</strong> fewer, larger, readable KPIs instead of tiny bordered stats everywhere.</li>
+      <li><strong>Primary workspace:</strong> one active task per screen, not stacked panels competing for attention.</li>
+      <li><strong>Inspector rail:</strong> right column for featured synthesis, verified links, warnings, and context.</li>
+      <li><strong>Status chips:</strong> small, calm labels for queue/risk/phase/uplink state.</li>
+      <li><strong>Action buttons:</strong> one strong primary action, secondary actions as quiet outline buttons.</li>
+    </ul>
+  </div>
+  <div class="section">
+    <h3>Surface-by-surface</h3>
+    <ul>
+      <li><strong>Login:</strong> cinematic access screen, centered form, cleaner brand mark, no social-button clutter unless wired.</li>
+      <li><strong>Hub:</strong> overview dashboard with queue depth, Sophia state, phase, featured answer, and event stream.</li>
+      <li><strong>Ask Sophia:</strong> large prompt composer with category/risk controls and priority preview.</li>
+      <li><strong>Sophia Live:</strong> streaming synthesis feed with one featured output and compact archive.</li>
+      <li><strong>Admin:</strong> queue table, filters, synthesis preview modal, clear approve/feature/reject actions.</li>
+      <li><strong>Mobile:</strong> top status header, bottom tab bar, single-column workspace, no horizontal nav wrap.</li>
+    </ul>
+  </div>
+</div>

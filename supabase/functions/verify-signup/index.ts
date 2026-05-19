@@ -1,9 +1,12 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+// @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
+// @ts-ignore
 const HCAPTCHA_SECRET = Deno.env.get("HCAPTCHA_SECRET") || "ES_DEMO_SECRET_PLACEHOLDER"
 const SITEKEY = "c3ea7102-0442-4b92-b390-a45ec2ca10e6"
 
-serve(async (req) => {
+serve(async (req: Request) => {
   // CORS Headers
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -43,7 +46,7 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     )
 
-  } catch (error) {
+  } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 500, 
       headers: { ...corsHeaders, "Content-Type": "application/json" } 
