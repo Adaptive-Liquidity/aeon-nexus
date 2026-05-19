@@ -127,44 +127,56 @@ export default function Gate({ onComplete }) {
     }
   };
 
-  if (isBot) return <div className="gt"><div className="err-fatal">FATAL_ERROR: AUTOMATED_REQUEST_DENIED</div></div>;
+  if (isBot) return <div className="g"><div className="gt" style={{color: '#ff4d4d'}}>FATAL_ERROR: AUTOMATED_REQUEST_DENIED</div></div>;
 
   return (
-    <div className="gt">
+    <div className="g">
       <Particles count={60} color="rgba(156,255,59,0.15)" />
-      <div className="mdl">
-        <div className="gl"></div>
-        <div className="ti">AEON:ACTIV8<br/><span className="st">NEXUS_TERMINAL v1.0.0</span></div>
+      <div className="gi">
+        <div className="gl">A E O N : N E X U S</div>
+        <div className="gt">ACTIV8<br/><span className="gh" style={{fontSize: '24px', opacity: 0.8}}>TERMINAL v1.0.0</span></div>
         
         {step === 0 && (
-          <div className="fm">
-            <input className="ip" type="email" placeholder="ENTER_EMAIL_IDENTIFIER" value={email} onChange={(e)=>setEmail(e.target.value)} onKeyDown={(e)=>e.key==='Enter'&&auth()} />
-            <div className="cp" style={{margin:"12px 0", display:"flex", justifyContent:"center"}}>
+          <div>
+            <div className="fi">
+              <div className="fi-w" style={{paddingLeft: 0}}>
+                <input type="email" placeholder="ENTER_EMAIL_IDENTIFIER" style={{paddingLeft: '18px'}} value={email} onChange={(e)=>setEmail(e.target.value)} onKeyDown={(e)=>e.key==='Enter'&&auth()} />
+              </div>
+            </div>
+            <div style={{margin:"20px 0", display:"flex", justifyContent:"center"}}>
               <HCaptcha sitekey="10000000-ffff-ffff-ffff-000000000001" onVerify={handleVerify} onExpire={handleExpire} theme="dark" ref={captchaRef} />
             </div>
-            {err && <div className="er">{err}</div>}
-            <button className="bt" onClick={auth}>INITIALIZE_HANDSHAKE</button>
+            {err && <div className="dis" style={{color: '#ff4d4d'}}>{err}</div>}
+            <button className="bp" onClick={auth}>INITIALIZE_HANDSHAKE</button>
           </div>
         )}
 
-        {step === 1 && <div className="dg">{diag.map((l,i) => <div key={i}>{l}</div>)}</div>}
+        {step === 1 && <div className="tm">{diag.map((l,i) => <div className="tl" key={i}>{l}</div>)}</div>}
 
         {step === 2 && (
-          <div className="fm">
-            <div className="dg">{diag.map((l,i) => <div key={i}>{l}</div>)}</div>
-            <input className="ip" type="text" placeholder="ENTER_6_DIGIT_CODE" value={invite} onChange={(e)=>setInvite(e.target.value)} maxLength={6} onKeyDown={(e)=>e.key==='Enter'&&auth()} />
-            <div className="inf">Check your inbox. Enter 000000 for this simulation.</div>
-            {err && <div className="er">{err}</div>}
-            <button className="bt" onClick={auth}>VERIFY_CONNECTION</button>
+          <div>
+            <div className="tm" style={{marginBottom: '20px'}}>{diag.map((l,i) => <div className="tl" key={i}>{l}</div>)}</div>
+            <div className="fi">
+              <div className="fi-w" style={{paddingLeft: 0}}>
+                <input type="text" placeholder="ENTER_6_DIGIT_CODE" style={{paddingLeft: '18px'}} value={invite} onChange={(e)=>setInvite(e.target.value)} maxLength={6} onKeyDown={(e)=>e.key==='Enter'&&auth()} />
+              </div>
+            </div>
+            <div className="dis">Check your inbox for the Secure Token.</div>
+            {err && <div className="dis" style={{color: '#ff4d4d'}}>{err}</div>}
+            <button className="bp" onClick={auth}>VERIFY_CONNECTION</button>
           </div>
         )}
 
         {step === 3 && (
-          <div className="fm">
-            <div className="dg">{diag.map((l,i) => <div key={i}>{l}</div>)}</div>
-            <input className="ip" type="text" placeholder="ENTER_CALLSIGN" value={name} onChange={(e)=>setName(e.target.value)} onKeyDown={(e)=>e.key==='Enter'&&auth()} />
-            {err && <div className="er">{err}</div>}
-            <button className="bt" onClick={auth}>REGISTER_IDENTITY</button>
+          <div>
+            <div className="tm" style={{marginBottom: '20px'}}>{diag.map((l,i) => <div className="tl" key={i}>{l}</div>)}</div>
+            <div className="fi">
+              <div className="fi-w" style={{paddingLeft: 0}}>
+                <input type="text" placeholder="ENTER_CALLSIGN" style={{paddingLeft: '18px'}} value={name} onChange={(e)=>setName(e.target.value)} onKeyDown={(e)=>e.key==='Enter'&&auth()} />
+              </div>
+            </div>
+            {err && <div className="dis" style={{color: '#ff4d4d'}}>{err}</div>}
+            <button className="bp" onClick={auth}>REGISTER_IDENTITY</button>
           </div>
         )}
       </div>
