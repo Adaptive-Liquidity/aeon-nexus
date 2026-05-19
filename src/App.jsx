@@ -16,6 +16,8 @@ import './index.css';
 
 function AppContent() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
   useEffect(() => {
     initStorageDefaults();
     const checkSession = async () => {
